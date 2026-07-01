@@ -10,25 +10,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-variable "length" {
-  description = "Length of the random string to generate."
-  type        = number
-  default     = 24
+# -----------------------------------------------------------------------------
+# Required
+# -----------------------------------------------------------------------------
+
+variable "name" {
+  description = "Name of the AppConfig application. Must be 1 to 64 characters."
+  type        = string
 
   validation {
-    condition     = var.length > 0 && var.length < 100
-    error_message = "Length must be a positive integer less than 100."
+    condition     = length(var.name) >= 1 && length(var.name) <= 64
+    error_message = "Name must be between 1 and 64 characters."
   }
 }
 
-variable "number" {
-  description = "Whether the random string should include numbers. Defaults to true."
-  type        = bool
-  default     = true
+# -----------------------------------------------------------------------------
+# Optional
+# -----------------------------------------------------------------------------
+
+variable "description" {
+  description = "Description of the AppConfig application. Must be at most 1024 characters."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.description == null ? true : length(var.description) <= 1024
+    error_message = "Description must be at most 1024 characters."
+  }
 }
 
-variable "special" {
-  description = "Whether the random string should include special characters. Defaults to false."
-  type        = bool
-  default     = false
+variable "region" {
+  description = "AWS Region where this resource is managed. Defaults to the provider-configured Region."
+  type        = string
+  default     = null
+}
+
+variable "tags" {
+  description = "Map of tags to assign to the resource. Up to 50 tags are allowed; tag keys must be 1 to 128 characters and values must be at most 256 characters."
+  type        = map(string)
+  default     = {}
+
+  validation {
+    condition = length(var.tags) <= 50 && alltrue([
+      for key, value in var.tags : length(key) >= 1 && length(key) <= 128 && length(value) <= 256
+    ])
+    error_message = "Tags must contain at most 50 entries. Tag keys must be 1 to 128 characters and values must be at most 256 characters."
+  }
 }
