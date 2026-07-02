@@ -1,7 +1,7 @@
 logical_product_family  = "launch"
 logical_product_service = "appcfg"
 class_env               = "dev"
-instance_env            = 1
+instance_env            = 11
 instance_resource       = 1
 
 resource_names_map = {

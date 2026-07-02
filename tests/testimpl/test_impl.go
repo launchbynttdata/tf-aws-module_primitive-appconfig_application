@@ -13,9 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestComposableComplete verifies the deployed AppConfig application.
+// TestComposableComplete verifies the deployed AppConfig application and exercises a reversible tag write.
 func TestComposableComplete(t *testing.T, ctx types.TestContext) {
-	verifyApplication(t, ctx)
+	client, arn := verifyApplication(t, ctx)
+	exerciseTagWrite(t, client, arn)
 }
 
 // TestComposableCompleteReadOnly verifies the deployed AppConfig application using read-only AWS API calls.
@@ -23,10 +24,11 @@ func TestComposableCompleteReadOnly(t *testing.T, ctx types.TestContext) {
 	verifyApplication(t, ctx)
 }
 
-func verifyApplication(t *testing.T, ctx types.TestContext) {
+func verifyApplication(t *testing.T, ctx types.TestContext) (*appconfig.Client, string) {
 	opts := ctx.TerratestTerraformOptions()
 	region := terraform.Output(t, opts, "region")
 	id := terraform.Output(t, opts, "id")
+	arn := terraform.Output(t, opts, "arn")
 	name := terraform.Output(t, opts, "name")
 	description := terraform.Output(t, opts, "description")
 
@@ -41,6 +43,8 @@ func verifyApplication(t *testing.T, ctx types.TestContext) {
 	assert.Equal(t, id, aws.ToString(app.Id))
 	assert.Equal(t, name, aws.ToString(app.Name))
 	assert.Equal(t, description, aws.ToString(app.Description))
+
+	return client, arn
 }
 
 func appConfigClient(t *testing.T, region string) *appconfig.Client {
@@ -50,4 +54,21 @@ func appConfigClient(t *testing.T, region string) *appconfig.Client {
 	require.NoError(t, err)
 
 	return appconfig.NewFromConfig(cfg)
+}
+
+func exerciseTagWrite(t *testing.T, client *appconfig.Client, resourceARN string) {
+	t.Helper()
+
+	const tagKey = "codex-functional-test"
+	_, err := client.TagResource(context.Background(), &appconfig.TagResourceInput{
+		ResourceArn: aws.String(resourceARN),
+		Tags:        map[string]string{tagKey: "true"},
+	})
+	require.NoError(t, err)
+
+	_, err = client.UntagResource(context.Background(), &appconfig.UntagResourceInput{
+		ResourceArn: aws.String(resourceARN),
+		TagKeys:     []string{tagKey},
+	})
+	require.NoError(t, err)
 }
