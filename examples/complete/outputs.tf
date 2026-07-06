@@ -12,20 +12,30 @@
 
 output "id" {
   description = "The application ID."
-  value       = aws_appconfig_application.application.id
+  value       = module.application.id
 }
-
 output "arn" {
   description = "The ARN of the application."
-  value       = aws_appconfig_application.application.arn
+  value       = module.application.arn
 }
-
 output "name" {
   description = "The name of the application."
-  value       = aws_appconfig_application.application.name
+  value       = module.application.name
 }
-
 output "description" {
   description = "The description of the application."
-  value       = aws_appconfig_application.application.description
+  value       = module.application.description
+}
+output "expected_name" {
+  description = "Expected application name."
+  value       = module.resource_names["application"].standard
+}
+output "expected_description" {
+  description = "Expected application description."
+  value       = var.description
+}
+
+output "region" {
+  description = "The AWS Region where the example resources are deployed."
+  value       = data.aws_region.current.region
 }
