@@ -26,15 +26,15 @@ func TestComposableCompleteReadOnly(t *testing.T, ctx types.TestContext) {
 
 func verifyApplication(t *testing.T, ctx types.TestContext) (*appconfig.Client, string) {
 	opts := ctx.TerratestTerraformOptions()
-	region := terraform.Output(t, opts, "region")
-	id := terraform.Output(t, opts, "id")
-	arn := terraform.Output(t, opts, "arn")
-	name := terraform.Output(t, opts, "name")
-	description := terraform.Output(t, opts, "description")
+	region := terraform.OutputContext(t, context.Background(), opts, "region")
+	id := terraform.OutputContext(t, context.Background(), opts, "id")
+	arn := terraform.OutputContext(t, context.Background(), opts, "arn")
+	name := terraform.OutputContext(t, context.Background(), opts, "name")
+	description := terraform.OutputContext(t, context.Background(), opts, "description")
 
 	require.NotEqual(t, "", id)
-	assert.Equal(t, terraform.Output(t, opts, "expected_name"), name)
-	assert.Equal(t, terraform.Output(t, opts, "expected_description"), description)
+	assert.Equal(t, terraform.OutputContext(t, context.Background(), opts, "expected_name"), name)
+	assert.Equal(t, terraform.OutputContext(t, context.Background(), opts, "expected_description"), description)
 
 	client := appConfigClient(t, region)
 	app, err := client.GetApplication(context.Background(), &appconfig.GetApplicationInput{ApplicationId: aws.String(id)})
